@@ -5,10 +5,9 @@ This project is a web-based Assembler & Disassembler tool for a simple computer,
 ## Figure 5.30 The components of a simple computer
 <img width="639" height="446" alt="image" src="https://github.com/user-attachments/assets/aad58024-8a9c-40e9-843e-5c0d5dd30855" />
 
-## Instruction Set (Table 5.4)
+## Table 5.4 Instruction Set
 
 The following table lists the instruction set for the "simple computer" used in this project, corresponding to Table 5.4 in Forouzan's textbook:
-
 
 | Instruction | Code | Operands                  | Action                                              |
 |-------------|------|---------------------------|-----------------------------------------------------|
