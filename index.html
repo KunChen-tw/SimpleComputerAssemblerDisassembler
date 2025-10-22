@@ -15,6 +15,44 @@
             .column { width: 100%; }
             textarea { width: 100%; }
         }
+
+        /* --- Added styles for Instruction Set table and footer --- */
+        .section {
+            max-width: 980px;
+            margin: 32px auto 0;
+        }
+        .section h3 {
+            margin: 0 0 12px;
+            text-align: left;
+        }
+        .inst-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .inst-table th, .inst-table td {
+            border: 1px solid #ccc;
+            padding: 8px 10px;
+            vertical-align: top;
+        }
+        .inst-table thead th {
+            background: #f7f7f7;
+            text-align: left;
+        }
+        .muted {
+            color: #666;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        footer {
+            max-width: 980px;
+            margin: 28px auto 0;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+            color: #555;
+            font-size: 13px;
+        }
+        footer a { color: inherit; }
     </style>
 </head>
 <body>
@@ -22,7 +60,9 @@
     <div class="container">
         <div class="column">
             <label for="machineCode"><b>機器語言<br>(Machine Code)</b></label>
-            <textarea id="machineCode" placeholder="例如：&#10;10FE&#10;2400"></textarea>
+            <textarea id="machineCode" placeholder="例如：
+10FE
+2400"></textarea>
         </div>
         <div class="column" style="justify-content:center;">
             <button onclick="disassembleToAsm()">→ 反組譯<br>(Disassemble)</button>
@@ -30,9 +70,126 @@
         </div>
         <div class="column">
             <label for="assemblyCode"><b>組合語言<br>(Assembly Code)</b></label>
-            <textarea id="assemblyCode" placeholder="例如：&#10;LOAD R0, FE&#10;STORE 40, R0"></textarea>
+            <textarea id="assemblyCode" placeholder="例如：
+LOAD R0, FE
+STORE 40, R0"></textarea>
         </div>
     </div>
+
+    <!-- Instruction Set Section -->
+    <section class="section" id="instruction-set">
+        <h3>Instruction Set（指令集，輔助參考）</h3>
+        <table class="inst-table">
+            <thead>
+                <tr>
+                    <th>Instruction</th>
+                    <th>Code</th>
+                    <th>Operands</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>HALT</td>
+                    <td>0</td>
+                    <td></td>
+                    <td>Stops the execution of the program</td>
+                </tr>
+                <tr>
+                    <td>LOAD</td>
+                    <td>1</td>
+                    <td>R<sub>D</sub>, M<sub>S</sub></td>
+                    <td>R<sub>D</sub> ← M<sub>S</sub></td>
+                </tr>
+                <tr>
+                    <td>STORE</td>
+                    <td>2</td>
+                    <td>M<sub>D</sub>, R<sub>S</sub></td>
+                    <td>M<sub>D</sub> ← R<sub>S</sub></td>
+                </tr>
+                <tr>
+                    <td>ADDI</td>
+                    <td>3</td>
+                    <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
+                    <td>R<sub>D</sub> ← R<sub>S1</sub> + R<sub>S2</sub></td>
+                </tr>
+                <tr>
+                    <td>ADDF</td>
+                    <td>4</td>
+                    <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
+                    <td>R<sub>D</sub> ← R<sub>S1</sub> + R<sub>S2</sub></td>
+                </tr>
+                <tr>
+                    <td>MOVE</td>
+                    <td>5</td>
+                    <td>R<sub>D</sub>, R<sub>S</sub></td>
+                    <td>R<sub>D</sub> ← R<sub>S</sub></td>
+                </tr>
+                <tr>
+                    <td>NOT</td>
+                    <td>6</td>
+                    <td>R<sub>D</sub>, R<sub>S</sub></td>
+                    <td>R<sub>D</sub> ← R<sub>S</sub></td>
+                </tr>
+                <tr>
+                    <td>AND</td>
+                    <td>7</td>
+                    <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
+                    <td>R<sub>D</sub> ← R<sub>S1</sub> AND R<sub>S2</sub></td>
+                </tr>
+                <tr>
+                    <td>OR</td>
+                    <td>8</td>
+                    <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
+                    <td>R<sub>D</sub> ← R<sub>S1</sub> OR R<sub>S2</sub></td>
+                </tr>
+                <tr>
+                    <td>XOR</td>
+                    <td>9</td>
+                    <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
+                    <td>R<sub>D</sub> ← R<sub>S1</sub> XOR R<sub>S2</sub></td>
+                </tr>
+                <tr>
+                    <td>INC</td>
+                    <td>A</td>
+                    <td>R</td>
+                    <td>R ← R + 1</td>
+                </tr>
+                <tr>
+                    <td>DEC</td>
+                    <td>B</td>
+                    <td>R</td>
+                    <td>R ← R - 1</td>
+                </tr>
+                <tr>
+                    <td>ROTATE</td>
+                    <td>C</td>
+                    <td>R, n, 0 or 1</td>
+                    <td>Rot<sub>n</sub> R</td>
+                </tr>
+                <tr>
+                    <td>JUMP</td>
+                    <td>D</td>
+                    <td>R, n</td>
+                    <td>IF R<sub>0</sub> ≠ R then PC = n, otherwise continue</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="muted">備註：Code 欄為 16 進位（0–D）。</p>
+    </section>
+
+    <footer>
+        <div>
+            原始程式庫（GitHub）：
+            <a href="https://github.com/KunChen-tw/SimpleComputerAssemblerDisassembler" target="_blank" rel="noreferrer">KunChen-tw/SimpleComputerAssemblerDisassembler</a>
+        </div>
+        <div>
+            版權聲明：MIT License — Copyright (c) 2025 Kun Chen
+            （完整授權條款請見
+            <a href="https://github.com/KunChen-tw/SimpleComputerAssemblerDisassembler/blob/87de55869a7889009e68cf366383c204dd0189e9/LICENSE" target="_blank" rel="noreferrer">LICENSE</a>）
+        </div>
+    </footer>
+
     <script src="disassembler.js"></script>
     <script src="assembler.js"></script>
     <script>
