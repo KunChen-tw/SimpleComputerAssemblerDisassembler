@@ -1,206 +1,231 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Simple Computer Assembler/Disassembler</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 30px; }
-        .container { display: flex; justify-content: center; align-items: flex-start; gap: 24px; }
-        textarea { width: 300px; height: 280px; font-size: 15px; }
-        .column { display: flex; flex-direction: column; align-items: center; }
-        button { margin: 12px 0; padding: 8px 18px; font-size: 16px;}
-        h2 { text-align: center; }
-        @media (max-width: 700px) {
-            .container { flex-direction: column; align-items: stretch; }
-            .column { width: 100%; }
-            textarea { width: 100%; }
-        }
 
-        /* --- Added styles for Instruction Set table and footer --- */
-        .section {
-            max-width: 980px;
-            margin: 32px auto 0;
+    <!-- Bootstrap 5 CSS -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous"
+    />
+
+    <style>
+        /* Custom touches on top of Bootstrap */
+        .app-title {
+            font-weight: 700;
+            letter-spacing: 0.2px;
         }
-        .section h3 {
-            margin: 0 0 12px;
-            text-align: left;
+        .io-panel textarea {
+            height: 320px; /* consistent height across both sides */
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 15px;
         }
-        .inst-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
+        .middle-actions {
+            min-width: 180px;
         }
-        .inst-table th, .inst-table td {
-            border: 1px solid #ccc;
-            padding: 8px 10px;
-            vertical-align: top;
+        .inst-note {
+            color: #6c757d;
         }
-        .inst-table thead th {
-            background: #f7f7f7;
-            text-align: left;
+        .code-badge {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         }
-        .muted {
-            color: #666;
-            font-size: 13px;
-            margin-top: 8px;
-        }
-        footer {
-            max-width: 980px;
-            margin: 28px auto 0;
-            padding-top: 12px;
-            border-top: 1px solid #eee;
-            color: #555;
-            font-size: 13px;
-        }
-        footer a { color: inherit; }
     </style>
 </head>
 <body>
-    <h2>Simple Computer Assembler & Disassembler</h2>
-    <div class="container">
-        <div class="column">
-            <label for="machineCode"><b>機器語言<br>(Machine Code)</b></label>
-            <textarea id="machineCode" placeholder="例如：
+    <!-- Header / Navbar -->
+    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+        <div class="container">
+            <a class="navbar-brand app-title" href="#">
+                Simple Computer Assembler & Disassembler
+            </a>
+            <div class="d-none d-lg-block">
+                <a class="btn btn-sm btn-outline-secondary" target="_blank" rel="noreferrer" href="https://github.com/KunChen-tw/SimpleComputerAssemblerDisassembler">
+                    GitHub Repo
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container my-4 my-md-5">
+        <!-- I/O Panels -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="row g-4 align-items-stretch io-panel">
+                    <div class="col-12 col-lg-5">
+                        <label for="machineCode" class="form-label fw-semibold">
+                            機器語言 (Machine Code)
+                        </label>
+                        <textarea id="machineCode" class="form-control" placeholder="例如：
 10FE
 2400"></textarea>
-        </div>
-        <div class="column" style="justify-content:center;">
-            <button onclick="disassembleToAsm()">→ 反組譯<br>(Disassemble)</button>
-            <button onclick="assembleToMachine()">← 組譯<br>(Assemble)</button>
-        </div>
-        <div class="column">
-            <label for="assemblyCode"><b>組合語言<br>(Assembly Code)</b></label>
-            <textarea id="assemblyCode" placeholder="例如：
+                        <div class="form-text">每行 4 個十六進位字元（例如 10FE）。</div>
+                    </div>
+
+                    <div class="col-12 col-lg-2 d-flex justify-content-center align-items-center">
+                        <div class="d-grid gap-3 middle-actions w-100">
+                            <button class="btn btn-primary" onclick="disassembleToAsm()">
+                                → 反組譯 (Disassemble)
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="assembleToMachine()">
+                                ← 組譯 (Assemble)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-5">
+                        <label for="assemblyCode" class="form-label fw-semibold">
+                            組合語言 (Assembly Code)
+                        </label>
+                        <textarea id="assemblyCode" class="form-control" placeholder="例如：
 LOAD R0, FE
 STORE 40, R0"></textarea>
+                        <div class="form-text">每行一條指令；大小寫不拘，逗號可省略。</div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- Instruction Set Section -->
-    <section class="section" id="instruction-set">
-        <h3>Instruction Set（指令集，輔助參考）</h3>
-        <table class="inst-table">
-            <thead>
-                <tr>
-                    <th>Instruction</th>
-                    <th>Code</th>
-                    <th>Operands</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>HALT</td>
-                    <td>0</td>
-                    <td></td>
-                    <td>Stops the execution of the program</td>
-                </tr>
-                <tr>
-                    <td>LOAD</td>
-                    <td>1</td>
-                    <td>R<sub>D</sub>, M<sub>S</sub></td>
-                    <td>R<sub>D</sub> ← M<sub>S</sub></td>
-                </tr>
-                <tr>
-                    <td>STORE</td>
-                    <td>2</td>
-                    <td>M<sub>D</sub>, R<sub>S</sub></td>
-                    <td>M<sub>D</sub> ← R<sub>S</sub></td>
-                </tr>
-                <tr>
-                    <td>ADDI</td>
-                    <td>3</td>
-                    <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
-                    <td>R<sub>D</sub> ← R<sub>S1</sub> + R<sub>S2</sub></td>
-                </tr>
-                <tr>
-                    <td>ADDF</td>
-                    <td>4</td>
-                    <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
-                    <td>R<sub>D</sub> ← R<sub>S1</sub> + R<sub>S2</sub></td>
-                </tr>
-                <tr>
-                    <td>MOVE</td>
-                    <td>5</td>
-                    <td>R<sub>D</sub>, R<sub>S</sub></td>
-                    <td>R<sub>D</sub> ← R<sub>S</sub></td>
-                </tr>
-                <tr>
-                    <td>NOT</td>
-                    <td>6</td>
-                    <td>R<sub>D</sub>, R<sub>S</sub></td>
-                    <td>R<sub>D</sub> ← R<sub>S</sub></td>
-                </tr>
-                <tr>
-                    <td>AND</td>
-                    <td>7</td>
-                    <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
-                    <td>R<sub>D</sub> ← R<sub>S1</sub> AND R<sub>S2</sub></td>
-                </tr>
-                <tr>
-                    <td>OR</td>
-                    <td>8</td>
-                    <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
-                    <td>R<sub>D</sub> ← R<sub>S1</sub> OR R<sub>S2</sub></td>
-                </tr>
-                <tr>
-                    <td>XOR</td>
-                    <td>9</td>
-                    <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
-                    <td>R<sub>D</sub> ← R<sub>S1</sub> XOR R<sub>S2</sub></td>
-                </tr>
-                <tr>
-                    <td>INC</td>
-                    <td>A</td>
-                    <td>R</td>
-                    <td>R ← R + 1</td>
-                </tr>
-                <tr>
-                    <td>DEC</td>
-                    <td>B</td>
-                    <td>R</td>
-                    <td>R ← R - 1</td>
-                </tr>
-                <tr>
-                    <td>ROTATE</td>
-                    <td>C</td>
-                    <td>R, n, 0 or 1</td>
-                    <td>Rot<sub>n</sub> R</td>
-                </tr>
-                <tr>
-                    <td>JUMP</td>
-                    <td>D</td>
-                    <td>R, n</td>
-                    <td>IF R<sub>0</sub> ≠ R then PC = n, otherwise continue</td>
-                </tr>
-            </tbody>
-        </table>
-        <p class="muted">備註：Code 欄為 16 進位（0–D）。</p>
-    </section>
+        <!-- Instruction Set -->
+        <section class="mt-5">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <h5 class="mb-0">Instruction Set（指令集，輔助參考）</h5>
+                <span class="badge text-bg-secondary code-badge">Opcode: Hex (0–D)</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="min-width: 120px;">Instruction</th>
+                            <th style="min-width: 70px;">Code</th>
+                            <th style="min-width: 200px;">Operands</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>HALT</td>
+                            <td><span class="badge text-bg-dark code-badge">0</span></td>
+                            <td></td>
+                            <td>Stops the execution of the program</td>
+                        </tr>
+                        <tr>
+                            <td>LOAD</td>
+                            <td><span class="badge text-bg-dark code-badge">1</span></td>
+                            <td>R<sub>D</sub>, M<sub>S</sub></td>
+                            <td>R<sub>D</sub> ← M<sub>S</sub></td>
+                        </tr>
+                        <tr>
+                            <td>STORE</td>
+                            <td><span class="badge text-bg-dark code-badge">2</span></td>
+                            <td>M<sub>D</sub>, R<sub>S</sub></td>
+                            <td>M<sub>D</sub> ← R<sub>S</sub></td>
+                        </tr>
+                        <tr>
+                            <td>ADDI</td>
+                            <td><span class="badge text-bg-dark code-badge">3</span></td>
+                            <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
+                            <td>R<sub>D</sub> ← R<sub>S1</sub> + R<sub>S2</sub></td>
+                        </tr>
+                        <tr>
+                            <td>ADDF</td>
+                            <td><span class="badge text-bg-dark code-badge">4</span></td>
+                            <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
+                            <td>R<sub>D</sub> ← R<sub>S1</sub> + R<sub>S2</sub></td>
+                        </tr>
+                        <tr>
+                            <td>MOVE</td>
+                            <td><span class="badge text-bg-dark code-badge">5</span></td>
+                            <td>R<sub>D</sub>, R<sub>S</sub></td>
+                            <td>R<sub>D</sub> ← R<sub>S</sub></td>
+                        </tr>
+                        <tr>
+                            <td>NOT</td>
+                            <td><span class="badge text-bg-dark code-badge">6</span></td>
+                            <td>R<sub>D</sub>, R<sub>S</sub></td>
+                            <td>R<sub>D</sub> ← R<sub>S</sub></td>
+                        </tr>
+                        <tr>
+                            <td>AND</td>
+                            <td><span class="badge text-bg-dark code-badge">7</span></td>
+                            <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
+                            <td>R<sub>D</sub> ← R<sub>S1</sub> AND R<sub>S2</sub></td>
+                        </tr>
+                        <tr>
+                            <td>OR</td>
+                            <td><span class="badge text-bg-dark code-badge">8</span></td>
+                            <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
+                            <td>R<sub>D</sub> ← R<sub>S1</sub> OR R<sub>S2</sub></td>
+                        </tr>
+                        <tr>
+                            <td>XOR</td>
+                            <td><span class="badge text-bg-dark code-badge">9</span></td>
+                            <td>R<sub>D</sub>, R<sub>S1</sub>, R<sub>S2</sub></td>
+                            <td>R<sub>D</sub> ← R<sub>S1</sub> XOR R<sub>S2</sub></td>
+                        </tr>
+                        <tr>
+                            <td>INC</td>
+                            <td><span class="badge text-bg-dark code-badge">A</span></td>
+                            <td>R</td>
+                            <td>R ← R + 1</td>
+                        </tr>
+                        <tr>
+                            <td>DEC</td>
+                            <td><span class="badge text-bg-dark code-badge">B</span></td>
+                            <td>R</td>
+                            <td>R ← R - 1</td>
+                        </tr>
+                        <tr>
+                            <td>ROTATE</td>
+                            <td><span class="badge text-bg-dark code-badge">C</span></td>
+                            <td>R, n, 0 or 1</td>
+                            <td>Rot<sub>n</sub> R</td>
+                        </tr>
+                        <tr>
+                            <td>JUMP</td>
+                            <td><span class="badge text-bg-dark code-badge">D</span></td>
+                            <td>R, n</td>
+                            <td>IF R<sub>0</sub> ≠ R then PC = n, otherwise continue</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="inst-note mb-0">備註：Code 欄為 16 進位（0–D）。</p>
+        </section>
 
-    <footer>
-        <div>
-            原始程式庫（GitHub）：
-            <a href="https://github.com/KunChen-tw/SimpleComputerAssemblerDisassembler" target="_blank" rel="noreferrer">KunChen-tw/SimpleComputerAssemblerDisassembler</a>
-        </div>
-        <div>
-            版權聲明：MIT License — Copyright (c) 2025 Kun Chen
-            （完整授權條款請見
-            <a href="https://github.com/KunChen-tw/SimpleComputerAssemblerDisassembler/blob/87de55869a7889009e68cf366383c204dd0189e9/LICENSE" target="_blank" rel="noreferrer">LICENSE</a>）
-        </div>
-    </footer>
+        <!-- Footer / License -->
+        <footer class="mt-5 pt-3 border-top">
+            <div class="small text-muted">
+                GitHub : <a href="https://github.com/KunChen-tw/SimpleComputerAssemblerDisassembler" target="_blank" rel="noreferrer">KunChen-tw/SimpleComputerAssemblerDisassembler</a>
+                <br />
+                Copyright &copy; 2025 Kun Chen
+            </div>
+        </footer>
+    </main>
 
+    <!-- Scripts -->
     <script src="disassembler.js"></script>
     <script src="assembler.js"></script>
+
+    <!-- Bootstrap 5 Bundle JS (optional, for components) -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"
+    ></script>
+
     <script>
-    function disassembleToAsm() {
-        let machineText = document.getElementById('machineCode').value;
-        document.getElementById('assemblyCode').value = disassemble(machineText);
-    }
-    function assembleToMachine() {
-        let asmText = document.getElementById('assemblyCode').value;
-        document.getElementById('machineCode').value = assemble(asmText);
-    }
+        function disassembleToAsm() {
+            const machineText = document.getElementById('machineCode').value;
+            document.getElementById('assemblyCode').value = disassemble(machineText);
+        }
+        function assembleToMachine() {
+            const asmText = document.getElementById('assemblyCode').value;
+            document.getElementById('machineCode').value = assemble(asmText);
+        }
     </script>
 </body>
 </html>
