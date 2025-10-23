@@ -22,7 +22,7 @@ The following table lists the instruction set for the "simple computer" used in 
 | ADDI        | 3    | $R_D$, $R_{S1}$, $R_{S2}$ | $R_D$ ← $R_{S1}$ + $R_{S2}$                         |
 | ADDF        | 4    | $R_D$, $R_{S1}$, $R_{S2}$ | $R_D$ ← $R_{S1}$ + $R_{S2}$                         |
 | MOVE        | 5    | $R_D$, $R_S$              | $R_D$ ← $R_S$                                       |
-| NOT         | 6    | $R_D$, $R_S$              | $R_D$ ← $R_S$                                       |
+| NOT         | 6    | $R_D$, $R_S$              | $R_D$ ← Not $R_S$                                   |
 | AND         | 7    | $R_D$, $R_{S1}$, $R_{S2}$ | $R_D$ ← $R_{S1}$ AND $R_{S2}$                       |
 | OR          | 8    | $R_D$, $R_{S1}$, $R_{S2}$ | $R_D$ ← $R_{S1}$ OR $R_{S2}$                        |
 | XOR         | 9    | $R_D$, $R_{S1}$, $R_{S2}$ | $R_D$ ← $R_{S1}$ XOR $R_{S2}$                       |
